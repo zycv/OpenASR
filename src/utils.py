@@ -18,7 +18,7 @@ def cleanup_ckpt(expdir, num_last_ckpt_keep):
     ckptlist_rm = ckptlist[:-num_last_ckpt_keep]
     logging.info("Clean up checkpoints. Remain the last {} checkpoints.".format(num_last_ckpt_keep))
     for name in ckptlist_rm:
-       os.remove(os.path.join(expdir, name))  
+       os.remove(os.path.join(expdir, name))
 
 
 def get_command_stdout(command, require_zero_status=True):
@@ -62,7 +62,7 @@ def load_wave(path):
         path = path[:-1]
         out = get_command_stdout(path, require_zero_status=True)
         sample_rate, data = wavfile.read(io.BytesIO(out))
-    elif tag == "ark": 
+    elif tag == "ark":
         fn, offset = path.split(":", 1)
         offset = int(offset)
         with open(fn, 'rb') as f:
@@ -72,7 +72,7 @@ def load_wave(path):
         raise ValueError("Unknown file tag.")
     data = data.astype(np.float32)
     return sample_rate, data
-    
+
 
 def load_feat(path):
     items = path.strip().split(":", 1)
@@ -80,7 +80,7 @@ def load_feat(path):
         raise ValueError("Unknown path format.")
     tag = items[0]
     path = items[1]
-    if tag == "ark": 
+    if tag == "ark":
         return kio.read_mat(path)
     else:
         raise ValueError("Unknown file tag.")
@@ -142,7 +142,7 @@ def get_paddings_by_shape(shape, lengths, device="cpu"):
     return paddings
 
 def get_transformer_padding_byte_masks(B, T, lengths):
-    masks = get_paddings_by_shape([B, T], lengths).byte()
+    masks = get_paddings_by_shape([B, T], lengths).bool()
     return masks
 
 def get_transformer_casual_masks(T):
@@ -158,40 +158,40 @@ if TENSORBOARD_LOGGING == 1:
     import logging
     mpl_logger = logging.getLogger("matplotlib")
     mpl_logger.setLevel(logging.WARNING)
-    
+
     import matplotlib as mpl
     mpl.use('Agg')
     import matplotlib.pyplot as plt
     from tensorboardX import SummaryWriter
-    
+
     class Visualizer(object):
         def __init__(self):
             self.writer = None
             self.fig_step = 0
-        
+
         def set_writer(self, log_dir):
             if self.writer is not None:
                 raise ValueError("Dont set writer twice.")
             self.writer = SummaryWriter(log_dir)
-                
+
         def add_scalar(self, tag, value, step):
-            self.writer.add_scalar(tag=tag, 
+            self.writer.add_scalar(tag=tag,
                 scalar_value=value, global_step=step)
-                
+
         def add_graph(self, model):
             self.writer.add_graph(model)
 
         def add_image(self, tag, img, data_formats):
-            self.writer.add_image(tag, 
+            self.writer.add_image(tag,
                 img, 0, dataformats=data_formats)
-                
+
         def add_img_figure(self, tag, img, step=None):
             fig, axes = plt.subplots(1,1)
             axes.imshow(img)
-            self.writer.add_figure(tag, fig, global_step=step)                
-                
+            self.writer.add_figure(tag, fig, global_step=step)
+
         def close(self):
             self.writer.close()
-            
-    visualizer = Visualizer()            
+
+    visualizer = Visualizer()
 
